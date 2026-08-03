@@ -9,7 +9,7 @@ import type { TicketPriority, TicketStatus } from "@/lib/types";
 export function StatusBadge({ status }: { status: TicketStatus }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_COLOR[status]}`}
+      className={`mono inline-flex items-center rounded-md border px-2 py-0.5 text-[0.7rem] font-medium uppercase tracking-wide ${STATUS_COLOR[status]}`}
     >
       {STATUS_LABEL[status]}
     </span>
@@ -17,11 +17,14 @@ export function StatusBadge({ status }: { status: TicketStatus }) {
 }
 
 export function PriorityBadge({ priority }: { priority: TicketPriority }) {
+  const emergency = priority === "emergencia";
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${PRIORITY_COLOR[priority]}`}
+      className={`mono inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[0.7rem] font-medium uppercase tracking-wide ${PRIORITY_COLOR[priority]}`}
     >
-      {priority === "emergencia" && "🚨 "}
+      {emergency && (
+        <span className="pulse-alert inline-block h-1.5 w-1.5 rounded-full bg-alert" />
+      )}
       {PRIORITY_LABEL[priority]}
     </span>
   );

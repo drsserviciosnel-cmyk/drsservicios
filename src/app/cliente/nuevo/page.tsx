@@ -8,18 +8,17 @@ export default async function NuevoTicket() {
   return (
     <Shell profile={profile}>
       <div className="mx-auto max-w-lg">
-        <div className="mb-4">
-          <Link href="/cliente" className="text-sm text-blue-600 hover:underline">
-            ← Volver a mis tickets
-          </Link>
-        </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h1 className="mb-1 text-xl font-semibold text-slate-900">
-            Nuevo ticket de soporte
-          </h1>
-          <p className="mb-5 text-sm text-slate-500">
-            Reporta tu emergencia. Capturamos tu ubicación para medir el tiempo de
-            respuesta.
+        <Link
+          href="/cliente"
+          className="mono text-xs uppercase tracking-wide text-petrol hover:underline"
+        >
+          ← Mis tickets
+        </Link>
+        <div className="mt-3 rounded-2xl border border-line bg-paper p-6 shadow-sm">
+          <p className="eyebrow">Reporte de emergencia</p>
+          <h1 className="display mt-1 text-2xl text-ink">Nuevo ticket</h1>
+          <p className="mt-2 mb-6 text-sm text-ink-soft">
+            Capturamos tu ubicación para medir el tiempo de respuesta del técnico.
           </p>
           <NewTicketForm />
         </div>

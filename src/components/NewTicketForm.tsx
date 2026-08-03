@@ -33,7 +33,7 @@ export function NewTicketForm() {
         setGeoStatus("error");
         setGeoMsg(
           err.code === err.PERMISSION_DENIED
-            ? "Permiso de ubicación denegado. Puedes escribir la dirección manualmente."
+            ? "Permiso de ubicación denegado. Escribe la referencia manualmente."
             : "No se pudo obtener la ubicación.",
         );
       },
@@ -41,41 +41,49 @@ export function NewTicketForm() {
     );
   }
 
-  // Intenta ubicar automáticamente al abrir el formulario.
   useEffect(() => {
     locate();
   }, []);
 
   return (
     <form action={formAction} className="space-y-5">
-      <Field label="Lechería / Sitio" name="site_name" placeholder="Ej: Lechería San Pedro" />
-      <Field label="Título del problema" name="title" required placeholder="Ej: Falla en equipo de refrigeración" />
+      <Field
+        label="Lechería / Sitio"
+        name="site_name"
+        placeholder="Ej: Lechería San Pedro"
+      />
+      <Field
+        label="Título del problema"
+        name="title"
+        required
+        placeholder="Ej: Falla en equipo de refrigeración"
+      />
 
       <label className="block">
-        <span className="mb-1 block text-sm font-medium text-slate-700">
+        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-soft">
           Descripción
         </span>
         <textarea
           name="description"
           rows={4}
           placeholder="Describe la emergencia con el mayor detalle posible…"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          className="w-full rounded-lg border border-line-strong bg-paper px-3 py-2 text-ink outline-none transition focus:border-petrol focus:ring-2 focus:ring-petrol-tint"
         />
       </label>
 
       <label className="block">
-        <span className="mb-1 block text-sm font-medium text-slate-700">
+        <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-soft">
           Prioridad
         </span>
         <select
           name="priority"
           defaultValue="alta"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+          className="w-full rounded-lg border border-line-strong bg-paper px-3 py-2 text-ink outline-none transition focus:border-petrol focus:ring-2 focus:ring-petrol-tint"
         >
           <option value="baja">Baja</option>
           <option value="media">Media</option>
           <option value="alta">Alta</option>
-          <option value="emergencia">🚨 Emergencia</option>
+          <option value="emergencia">Emergencia</option>
         </select>
       </label>
 
@@ -86,40 +94,46 @@ export function NewTicketForm() {
       />
 
       {/* Geolocalización */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <div className="rounded-lg border border-line bg-milk p-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-slate-700">📍 Ubicación</span>
+          <span className="mono text-xs font-medium uppercase tracking-wide text-ink-soft">
+            Ubicación
+          </span>
           <button
             type="button"
             onClick={locate}
-            className="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
+            className="mono rounded-md border border-line-strong bg-paper px-2.5 py-1 text-[0.68rem] uppercase tracking-wide text-ink-soft transition hover:bg-milk"
           >
             {geoStatus === "locating" ? "Ubicando…" : "Actualizar"}
           </button>
         </div>
         {geoStatus === "ok" && coords && (
-          <p className="mt-1 text-xs text-emerald-700">
-            Ubicación capturada: {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
-            {coords.acc ? ` (±${Math.round(coords.acc)} m)` : ""}
+          <p className="mono mt-2 text-xs text-ok">
+            ● {coords.lat.toFixed(5)}, {coords.lng.toFixed(5)}
+            {coords.acc ? `  ±${Math.round(coords.acc)}m` : ""}
           </p>
         )}
         {geoStatus === "locating" && (
-          <p className="mt-1 text-xs text-slate-500">Obteniendo tu ubicación…</p>
+          <p className="mono mt-2 text-xs text-ink-faint">Obteniendo ubicación…</p>
         )}
         {geoStatus === "error" && (
-          <p className="mt-1 text-xs text-amber-700">{geoMsg}</p>
+          <p className="mt-2 text-xs text-signal">{geoMsg}</p>
         )}
       </div>
 
       <input type="hidden" name="location_lat" value={coords?.lat ?? ""} />
       <input type="hidden" name="location_lng" value={coords?.lng ?? ""} />
 
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state?.error && (
+        <p className="rounded-md border border-alert/30 bg-alert-tint px-3 py-2 text-sm text-alert">
+          {state.error}
+        </p>
+      )}
 
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-lg bg-blue-600 py-2.5 font-medium text-white transition hover:bg-blue-700 disabled:opacity-60"
+        className="mono w-full rounded-lg bg-petrol py-2.5 text-sm font-medium uppercase tracking-wide text-white transition hover:bg-petrol-deep disabled:opacity-60"
       >
         {pending ? "Creando ticket…" : "Crear ticket de soporte"}
       </button>
@@ -133,10 +147,12 @@ function Field({
 }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
+      <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-ink-soft">
+        {label}
+      </span>
       <input
         {...props}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        className="w-full rounded-lg border border-line-strong bg-paper px-3 py-2 text-ink outline-none transition focus:border-petrol focus:ring-2 focus:ring-petrol-tint"
       />
     </label>
   );

@@ -1,26 +1,122 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Superficie */
+  --color-milk: #f1f3ef; /* fondo leche frío */
+  --color-paper: #fdfdfc; /* tarjetas */
+  --color-ink: #14201c; /* tinta pino casi negra */
+  --color-ink-soft: #56635c; /* texto secundario */
+  --color-ink-faint: #8b978f; /* texto terciario */
+  --color-line: #dfe3dd; /* bordes */
+  --color-line-strong: #cdd3cb;
+
+  /* Marca */
+  --color-petrol: #0c5c57; /* primario: refrigeración / higiene */
+  --color-petrol-deep: #07403c;
+  --color-petrol-tint: #e2edeb;
+
+  /* Señales */
+  --color-signal: #b8720a; /* ámbar despacho (contraste texto) */
+  --color-signal-tint: #f8ecd4;
+  --color-alert: #c0311e; /* emergencia */
+  --color-alert-tint: #f6ddd7;
+  --color-ok: #1f7a4d; /* resuelto */
+  --color-ok-tint: #dcece2;
+
+  --font-display: var(--font-archivo);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ---- Base ---- */
+::selection {
+  background: var(--color-petrol);
+  color: #fff;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-petrol);
+  outline-offset: 2px;
+}
+
+/* ---- Utilidades tipográficas ---- */
+.eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--color-ink-faint);
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.02;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Grano sutil de fondo (textura de despacho) ---- */
+.grid-field {
+  background-image:
+    linear-gradient(to right, rgba(12, 92, 87, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(12, 92, 87, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ---- Pipeline de estados (firma) ---- */
+.pipe {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.pipe-node {
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  border: 1.5px solid var(--color-line-strong);
+  background: var(--color-paper);
+  flex: none;
+}
+.pipe-node.done {
+  border-color: var(--color-petrol);
+  background: var(--color-petrol);
+}
+.pipe-node.current {
+  border-color: var(--color-petrol);
+  background: var(--color-paper);
+  box-shadow: 0 0 0 3px var(--color-petrol-tint);
+}
+.pipe-seg {
+  height: 1.5px;
+  flex: 1 1 auto;
+  min-width: 10px;
+  background: var(--color-line-strong);
+}
+.pipe-seg.done {
+  background: var(--color-petrol);
+}
+
+/* Pulso para emergencias */
+@keyframes drs-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(192, 49, 30, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(192, 49, 30, 0);
   }
 }
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.pulse-alert {
+  animation: drs-pulse 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulse-alert {
+    animation: none;
+  }
 }

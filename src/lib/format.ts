@@ -8,10 +8,10 @@ export const PRIORITY_LABEL: Record<TicketPriority, string> = {
 };
 
 export const PRIORITY_COLOR: Record<TicketPriority, string> = {
-  baja: "bg-slate-100 text-slate-700 border-slate-200",
-  media: "bg-sky-100 text-sky-700 border-sky-200",
-  alta: "bg-amber-100 text-amber-800 border-amber-200",
-  emergencia: "bg-red-100 text-red-700 border-red-200",
+  baja: "bg-milk text-ink-soft border-line-strong",
+  media: "bg-petrol-tint text-petrol border-petrol/25",
+  alta: "bg-signal-tint text-signal border-signal/30",
+  emergencia: "bg-alert-tint text-alert border-alert/40",
 };
 
 export const STATUS_LABEL: Record<TicketStatus, string> = {
@@ -26,14 +26,47 @@ export const STATUS_LABEL: Record<TicketStatus, string> = {
 };
 
 export const STATUS_COLOR: Record<TicketStatus, string> = {
-  nuevo: "bg-violet-100 text-violet-700 border-violet-200",
-  asignado: "bg-blue-100 text-blue-700 border-blue-200",
-  aceptado: "bg-cyan-100 text-cyan-700 border-cyan-200",
-  en_camino: "bg-indigo-100 text-indigo-700 border-indigo-200",
-  en_proceso: "bg-amber-100 text-amber-800 border-amber-200",
-  resuelto: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  cerrado: "bg-slate-100 text-slate-600 border-slate-200",
-  cancelado: "bg-rose-100 text-rose-700 border-rose-200",
+  nuevo: "bg-milk text-ink-soft border-line-strong",
+  asignado: "bg-petrol-tint text-petrol border-petrol/25",
+  aceptado: "bg-petrol-tint text-petrol border-petrol/25",
+  en_camino: "bg-signal-tint text-signal border-signal/30",
+  en_proceso: "bg-signal-tint text-signal border-signal/30",
+  resuelto: "bg-ok-tint text-ok border-ok/30",
+  cerrado: "bg-milk text-ink-faint border-line",
+  cancelado: "bg-alert-tint text-alert border-alert/30",
+};
+
+/** Color de la espina lateral de la tarjeta según estado. */
+export const STATUS_SPINE: Record<TicketStatus, string> = {
+  nuevo: "bg-ink-faint",
+  asignado: "bg-petrol",
+  aceptado: "bg-petrol",
+  en_camino: "bg-signal",
+  en_proceso: "bg-signal",
+  resuelto: "bg-ok",
+  cerrado: "bg-line-strong",
+  cancelado: "bg-alert",
+};
+
+/** Orden del pipeline de respuesta (firma visual). */
+export const PIPELINE: TicketStatus[] = [
+  "nuevo",
+  "asignado",
+  "aceptado",
+  "en_camino",
+  "en_proceso",
+  "resuelto",
+];
+
+export const PIPELINE_SHORT: Record<TicketStatus, string> = {
+  nuevo: "Nuevo",
+  asignado: "Asig.",
+  aceptado: "Acep.",
+  en_camino: "Camino",
+  en_proceso: "Proceso",
+  resuelto: "Listo",
+  cerrado: "Cerrado",
+  cancelado: "Cancel.",
 };
 
 export function fmtDate(value: string | null): string {
