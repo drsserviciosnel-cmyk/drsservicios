@@ -112,6 +112,35 @@ export async function advanceStatus(formData: FormData) {
   revalidatePath("/admin");
 }
 
+/** Técnico resuelve el ticket adjuntando foto de evidencia. */
+export async function resolveTicket(formData: FormData) {
+  const { supabase, userId } = await currentUserId();
+  const ticketId = String(formData.get("ticket_id"));
+  const evidenceUrl = String(formData.get("evidence_url") || "").trim() || null;
+  const note = String(formData.get("resolution_note") || "").trim() || null;
+
+  await supabase
+    .from("tickets")
+    .update({
+      status: "resuelto",
+      resolved_at: new Date().toISOString(),
+      evidence_url: evidenceUrl,
+      resolution_note: note,
+    })
+    .eq("id", ticketId);
+
+  await supabase.from("ticket_events").insert({
+    ticket_id: ticketId,
+    actor_id: userId,
+    to_status: "resuelto",
+    note: note ?? "Resuelto con evidencia",
+  });
+
+  revalidatePath("/tecnico");
+  revalidatePath("/admin");
+  revalidatePath("/cliente");
+}
+
 /** Admin cambia el rol de un usuario (cliente <-> tecnico <-> admin). */
 export async function setRole(formData: FormData) {
   const { supabase } = await currentUserId();

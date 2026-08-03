@@ -33,6 +33,8 @@ export interface Ticket {
   location_lng: number | null;
   location_address: string | null;
   assigned_technician_id: string | null;
+  evidence_url: string | null;
+  resolution_note: string | null;
   created_at: string;
   assigned_at: string | null;
   accepted_at: string | null;

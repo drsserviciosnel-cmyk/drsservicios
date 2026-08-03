@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { advanceStatus } from "@/lib/actions/tickets";
 import { Shell } from "@/components/Shell";
 import { StatusBadge, PriorityBadge } from "@/components/Badges";
-import { TicketPipeline } from "@/components/ticket-ui";
+import { TicketPipeline, EvidenceThumb } from "@/components/ticket-ui";
+import { ResolveForm } from "@/components/ResolveForm";
 import { fmtDate, since, STATUS_SPINE } from "@/lib/format";
 import type { TicketStatus, TicketWithRelations } from "@/lib/types";
 
@@ -94,15 +95,21 @@ export default async function TecnicoPage() {
                   )}
                 </div>
 
-                {next && (
+                {(t.status === "en_proceso" || next) && (
                   <div className="mt-4 border-t border-line pt-4">
-                    <form action={advanceStatus}>
-                      <input type="hidden" name="ticket_id" value={t.id} />
-                      <input type="hidden" name="to_status" value={next.to} />
-                      <button className="mono w-full rounded-lg bg-petrol px-4 py-2.5 text-sm font-medium uppercase tracking-wide text-white transition hover:bg-petrol-deep sm:w-auto">
-                        {next.label} →
-                      </button>
-                    </form>
+                    {t.status === "en_proceso" ? (
+                      <ResolveForm ticketId={t.id} />
+                    ) : (
+                      next && (
+                        <form action={advanceStatus}>
+                          <input type="hidden" name="ticket_id" value={t.id} />
+                          <input type="hidden" name="to_status" value={next.to} />
+                          <button className="mono w-full rounded-lg bg-petrol px-4 py-2.5 text-sm font-medium uppercase tracking-wide text-white transition hover:bg-petrol-deep sm:w-auto">
+                            {next.label} →
+                          </button>
+                        </form>
+                      )
+                    )}
                   </div>
                 )}
               </div>
@@ -126,7 +133,19 @@ export default async function TecnicoPage() {
                   </span>{" "}
                   · {t.title}
                 </span>
-                <StatusBadge status={t.status} />
+                <span className="flex items-center gap-3">
+                  {t.evidence_url && (
+                    <a
+                      href={t.evidence_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mono text-xs text-petrol hover:underline"
+                    >
+                      Evidencia
+                    </a>
+                  )}
+                  <StatusBadge status={t.status} />
+                </span>
               </div>
             ))}
           </div>

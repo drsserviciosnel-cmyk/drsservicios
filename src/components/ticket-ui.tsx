@@ -1,6 +1,50 @@
 import { PIPELINE, PIPELINE_SHORT, STATUS_LABEL } from "@/lib/format";
 import type { TicketStatus } from "@/lib/types";
 
+/** Miniatura de la foto de evidencia + nota de cierre. */
+export function EvidenceThumb({
+  url,
+  note,
+}: {
+  url: string;
+  note?: string | null;
+}) {
+  return (
+    <div className="mt-3 flex items-start gap-3 rounded-lg border border-line bg-milk p-2.5">
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block flex-none"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt="Evidencia del trabajo"
+          className="h-14 w-14 rounded-md object-cover ring-1 ring-line-strong"
+        />
+      </a>
+      <div className="min-w-0">
+        <p className="mono text-[0.62rem] uppercase tracking-wide text-ink-faint">
+          Evidencia
+        </p>
+        {note ? (
+          <p className="text-sm text-ink-soft">{note}</p>
+        ) : (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-petrol hover:underline"
+          >
+            Ver foto
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Firma visual: la "línea de respuesta" de un ticket.
  * Muestra el avance por las etapas nuevo → asignado → … → resuelto.

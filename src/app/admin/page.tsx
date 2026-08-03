@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { assignTicket, advanceStatus } from "@/lib/actions/tickets";
 import { Shell } from "@/components/Shell";
 import { StatusBadge, PriorityBadge } from "@/components/Badges";
-import { TicketPipeline } from "@/components/ticket-ui";
+import { TicketPipeline, EvidenceThumb } from "@/components/ticket-ui";
 import { fmtDate, elapsed, since, STATUS_SPINE } from "@/lib/format";
 import type { Profile, TicketWithRelations } from "@/lib/types";
 
@@ -122,6 +122,10 @@ export default async function AdminPage() {
                     </a>
                   )}
                 </div>
+
+                {t.evidence_url && (
+                  <EvidenceThumb url={t.evidence_url} note={t.resolution_note} />
+                )}
 
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4">
                   <span className="mono text-xs uppercase tracking-wide text-ink-faint">

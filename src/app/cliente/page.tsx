@@ -3,7 +3,7 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Shell } from "@/components/Shell";
 import { StatusBadge, PriorityBadge } from "@/components/Badges";
-import { TicketPipeline } from "@/components/ticket-ui";
+import { TicketPipeline, EvidenceThumb } from "@/components/ticket-ui";
 import { fmtDate, since, STATUS_SPINE } from "@/lib/format";
 import type { Ticket } from "@/lib/types";
 
@@ -70,6 +70,10 @@ export default async function ClientePage() {
                 <div className="mt-4">
                   <TicketPipeline status={t.status} labels />
                 </div>
+
+                {t.evidence_url && (
+                  <EvidenceThumb url={t.evidence_url} note={t.resolution_note} />
+                )}
 
                 <div className="mono mt-4 flex flex-wrap gap-x-6 gap-y-1 border-t border-line pt-3 text-xs text-ink-faint">
                   <span>Creado {fmtDate(t.created_at)}</span>
