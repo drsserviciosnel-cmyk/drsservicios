@@ -122,6 +122,15 @@ export function fmtKm(km: number | null): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
 }
 
+/** Duración en segundos → "X min" / "Xh Ym". */
+export function fmtDuration(seconds: number | null): string {
+  if (seconds == null) return "—";
+  const min = Math.round(seconds / 60);
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  return `${h}h ${min % 60}m`;
+}
+
 /** Link de ruta en Google Maps entre origen (técnico) y destino (sitio). */
 export function mapsRoute(
   fromLat: number,

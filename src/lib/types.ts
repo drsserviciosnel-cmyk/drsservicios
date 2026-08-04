@@ -38,6 +38,9 @@ export interface Ticket {
   tech_start_lat: number | null;
   tech_start_lng: number | null;
   distance_km: number | null;
+  drive_eta_seconds: number | null;
+  drive_distance_km: number | null;
+  route_provider: string | null;
   created_at: string;
   assigned_at: string | null;
   accepted_at: string | null;

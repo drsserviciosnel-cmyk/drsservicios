@@ -5,6 +5,7 @@ import {
   elapsed,
   since,
   fmtKm,
+  fmtDuration,
   mapsRoute,
 } from "@/lib/format";
 import type { Ticket, TicketStatus } from "@/lib/types";
@@ -26,8 +27,17 @@ export function TicketMetrics({ t }: { t: Ticket }) {
   const total = t.resolved_at ? elapsed(t.created_at, t.resolved_at) : null;
 
   const chips: { label: string; value: string; tone?: string }[] = [];
-  if (t.distance_km != null)
+  if (t.drive_eta_seconds != null) {
+    chips.push({
+      label: "ETA auto",
+      value: `~${fmtDuration(t.drive_eta_seconds)}`,
+      tone: "text-petrol",
+    });
+    if (t.drive_distance_km != null)
+      chips.push({ label: "Manejo", value: fmtKm(t.drive_distance_km) });
+  } else if (t.distance_km != null) {
     chips.push({ label: "Distancia", value: `~${fmtKm(t.distance_km)}` });
+  }
   if (respuesta) chips.push({ label: "Respuesta", value: respuesta });
   if (traslado)
     chips.push({

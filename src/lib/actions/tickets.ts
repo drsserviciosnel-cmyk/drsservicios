@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { haversineKm } from "@/lib/format";
+import { getDrivingRoute } from "@/lib/geo/routes";
 import type { TicketPriority, TicketStatus } from "@/lib/types";
 
 async function currentUserId() {
@@ -130,8 +131,12 @@ export async function departToTicket(formData: FormData) {
     .single();
 
   let distance: number | null = null;
+  let driveEta: number | null = null;
+  let driveKm: number | null = null;
+  let provider: string | null = null;
   const tLat = techLat ? Number(techLat) : null;
   const tLng = techLng ? Number(techLng) : null;
+
   if (
     tLat != null &&
     tLng != null &&
@@ -142,6 +147,17 @@ export async function departToTicket(formData: FormData) {
       Math.round(
         haversineKm(tLat, tLng, ticket.location_lat, ticket.location_lng) * 10,
       ) / 10;
+
+    // Ruta de manejo real (Google Routes API, o OSRM como fallback)
+    const route = await getDrivingRoute(
+      { lat: tLat, lng: tLng },
+      { lat: ticket.location_lat, lng: ticket.location_lng },
+    );
+    if (route) {
+      driveEta = route.seconds;
+      driveKm = Math.round(route.km * 10) / 10;
+      provider = route.provider;
+    }
   }
 
   await supabase
@@ -152,17 +168,23 @@ export async function departToTicket(formData: FormData) {
       tech_start_lat: tLat,
       tech_start_lng: tLng,
       distance_km: distance,
+      drive_eta_seconds: driveEta,
+      drive_distance_km: driveKm,
+      route_provider: provider,
     })
     .eq("id", ticketId);
 
+  const etaMin = driveEta != null ? Math.round(driveEta / 60) : null;
   await supabase.from("ticket_events").insert({
     ticket_id: ticketId,
     actor_id: userId,
     to_status: "en_camino",
     note:
-      distance != null
-        ? `En camino · ~${distance} km al sitio`
-        : "En camino",
+      etaMin != null
+        ? `En camino · ETA ~${etaMin} min (${driveKm} km)`
+        : distance != null
+          ? `En camino · ~${distance} km al sitio`
+          : "En camino",
   });
 
   revalidatePath("/tecnico");
