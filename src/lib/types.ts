@@ -35,6 +35,9 @@ export interface Ticket {
   assigned_technician_id: string | null;
   evidence_url: string | null;
   resolution_note: string | null;
+  tech_start_lat: number | null;
+  tech_start_lng: number | null;
+  distance_km: number | null;
   created_at: string;
   assigned_at: string | null;
   accepted_at: string | null;

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { haversineKm } from "@/lib/format";
 import type { TicketPriority, TicketStatus } from "@/lib/types";
 
 async function currentUserId() {
@@ -106,6 +107,62 @@ export async function advanceStatus(formData: FormData) {
     actor_id: userId,
     to_status: to,
     note,
+  });
+
+  revalidatePath("/tecnico");
+  revalidatePath("/admin");
+}
+
+/**
+ * Técnico marca "voy en camino": guarda su ubicación de partida y calcula
+ * la distancia en línea recta al sitio del ticket.
+ */
+export async function departToTicket(formData: FormData) {
+  const { supabase, userId } = await currentUserId();
+  const ticketId = String(formData.get("ticket_id"));
+  const techLat = formData.get("tech_lat");
+  const techLng = formData.get("tech_lng");
+
+  const { data: ticket } = await supabase
+    .from("tickets")
+    .select("location_lat, location_lng")
+    .eq("id", ticketId)
+    .single();
+
+  let distance: number | null = null;
+  const tLat = techLat ? Number(techLat) : null;
+  const tLng = techLng ? Number(techLng) : null;
+  if (
+    tLat != null &&
+    tLng != null &&
+    ticket?.location_lat != null &&
+    ticket?.location_lng != null
+  ) {
+    distance =
+      Math.round(
+        haversineKm(tLat, tLng, ticket.location_lat, ticket.location_lng) * 10,
+      ) / 10;
+  }
+
+  await supabase
+    .from("tickets")
+    .update({
+      status: "en_camino",
+      en_camino_at: new Date().toISOString(),
+      tech_start_lat: tLat,
+      tech_start_lng: tLng,
+      distance_km: distance,
+    })
+    .eq("id", ticketId);
+
+  await supabase.from("ticket_events").insert({
+    ticket_id: ticketId,
+    actor_id: userId,
+    to_status: "en_camino",
+    note:
+      distance != null
+        ? `En camino · ~${distance} km al sitio`
+        : "En camino",
   });
 
   revalidatePath("/tecnico");

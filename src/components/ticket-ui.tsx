@@ -1,5 +1,77 @@
-import { PIPELINE, PIPELINE_SHORT, STATUS_LABEL } from "@/lib/format";
-import type { TicketStatus } from "@/lib/types";
+import {
+  PIPELINE,
+  PIPELINE_SHORT,
+  STATUS_LABEL,
+  elapsed,
+  since,
+  fmtKm,
+  mapsRoute,
+} from "@/lib/format";
+import type { Ticket, TicketStatus } from "@/lib/types";
+
+/** Distancia técnico→sitio y desglose de tiempos de respuesta. */
+export function TicketMetrics({ t }: { t: Ticket }) {
+  const hasRoute =
+    t.tech_start_lat != null &&
+    t.tech_start_lng != null &&
+    t.location_lat != null &&
+    t.location_lng != null;
+
+  const respuesta = t.accepted_at ? elapsed(t.created_at, t.accepted_at) : null;
+  const traslado = t.started_at
+    ? elapsed(t.en_camino_at, t.started_at)
+    : t.en_camino_at
+      ? since(t.en_camino_at)
+      : null;
+  const total = t.resolved_at ? elapsed(t.created_at, t.resolved_at) : null;
+
+  const chips: { label: string; value: string; tone?: string }[] = [];
+  if (t.distance_km != null)
+    chips.push({ label: "Distancia", value: `~${fmtKm(t.distance_km)}` });
+  if (respuesta) chips.push({ label: "Respuesta", value: respuesta });
+  if (traslado)
+    chips.push({
+      label: t.started_at ? "Traslado" : "En camino",
+      value: traslado,
+      tone: t.started_at ? undefined : "text-signal",
+    });
+  if (total) chips.push({ label: "Total", value: total, tone: "text-ok" });
+
+  if (chips.length === 0 && !hasRoute) return null;
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      {chips.map((c) => (
+        <span
+          key={c.label}
+          className="mono inline-flex items-baseline gap-1 rounded-md border border-line bg-milk px-2 py-1 text-[0.7rem]"
+        >
+          <span className="uppercase tracking-wide text-ink-faint">
+            {c.label}
+          </span>
+          <span className={`font-semibold ${c.tone ?? "text-ink"}`}>
+            {c.value}
+          </span>
+        </span>
+      ))}
+      {hasRoute && (
+        <a
+          href={mapsRoute(
+            t.tech_start_lat!,
+            t.tech_start_lng!,
+            t.location_lat!,
+            t.location_lng!,
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mono inline-flex items-center gap-1 rounded-md border border-petrol/25 bg-petrol-tint px-2 py-1 text-[0.7rem] font-medium uppercase tracking-wide text-petrol hover:bg-petrol/10"
+        >
+          ↳ Ruta
+        </a>
+      )}
+    </div>
+  );
+}
 
 /** Miniatura de la foto de evidencia + nota de cierre. */
 export function EvidenceThumb({

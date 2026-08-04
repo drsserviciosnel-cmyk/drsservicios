@@ -3,8 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { advanceStatus } from "@/lib/actions/tickets";
 import { Shell } from "@/components/Shell";
 import { StatusBadge, PriorityBadge } from "@/components/Badges";
-import { TicketPipeline, EvidenceThumb } from "@/components/ticket-ui";
+import { TicketPipeline, EvidenceThumb, TicketMetrics } from "@/components/ticket-ui";
 import { ResolveForm } from "@/components/ResolveForm";
+import { DepartForm } from "@/components/DepartForm";
 import { fmtDate, since, STATUS_SPINE } from "@/lib/format";
 import type { TicketStatus, TicketWithRelations } from "@/lib/types";
 
@@ -80,6 +81,8 @@ export default async function TecnicoPage() {
                   <TicketPipeline status={t.status} labels />
                 </div>
 
+                <TicketMetrics t={t} />
+
                 <div className="mono mt-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-ink-faint">
                   <span>Creado {fmtDate(t.created_at)}</span>
                   <span>Espera {since(t.created_at)}</span>
@@ -99,6 +102,8 @@ export default async function TecnicoPage() {
                   <div className="mt-4 border-t border-line pt-4">
                     {t.status === "en_proceso" ? (
                       <ResolveForm ticketId={t.id} />
+                    ) : t.status === "aceptado" ? (
+                      <DepartForm ticketId={t.id} />
                     ) : (
                       next && (
                         <form action={advanceStatus}>

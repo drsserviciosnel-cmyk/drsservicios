@@ -3,7 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { assignTicket, advanceStatus } from "@/lib/actions/tickets";
 import { Shell } from "@/components/Shell";
 import { StatusBadge, PriorityBadge } from "@/components/Badges";
-import { TicketPipeline, EvidenceThumb } from "@/components/ticket-ui";
+import {
+  TicketPipeline,
+  EvidenceThumb,
+  TicketMetrics,
+} from "@/components/ticket-ui";
 import { fmtDate, elapsed, since, STATUS_SPINE } from "@/lib/format";
 import type { Profile, TicketWithRelations } from "@/lib/types";
 
@@ -100,16 +104,13 @@ export default async function AdminPage() {
                   <TicketPipeline status={t.status} labels />
                 </div>
 
+                <TicketMetrics t={t} />
+
                 <div className="mono mt-4 flex flex-wrap gap-x-6 gap-y-1 text-xs text-ink-faint">
                   <span>Creado {fmtDate(t.created_at)}</span>
                   <span>Espera {since(t.created_at)}</span>
                   {t.assigned_at && (
                     <span>Asignado en {elapsed(t.created_at, t.assigned_at)}</span>
-                  )}
-                  {t.resolved_at && (
-                    <span className="text-ok">
-                      Resuelto en {elapsed(t.created_at, t.resolved_at)}
-                    </span>
                   )}
                   {t.location_lat != null && (
                     <a
