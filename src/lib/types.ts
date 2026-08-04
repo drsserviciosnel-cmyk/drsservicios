@@ -44,6 +44,17 @@ export interface Ticket {
   closed_at: string | null;
 }
 
+export interface Notification {
+  id: string;
+  user_id: string;
+  ticket_id: string | null;
+  title: string;
+  body: string | null;
+  link: string | null;
+  read: boolean;
+  created_at: string;
+}
+
 export interface TicketWithRelations extends Ticket {
   client?: Pick<Profile, "id" | "full_name" | "phone"> | null;
   technician?: Pick<Profile, "id" | "full_name" | "phone"> | null;

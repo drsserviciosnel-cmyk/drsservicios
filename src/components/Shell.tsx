@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { signOut } from "@/lib/actions/auth";
+import { createClient } from "@/lib/supabase/server";
 import type { Profile, UserRole } from "@/lib/types";
 
 const ROLE_LABEL: Record<UserRole, string> = {
@@ -20,13 +21,20 @@ const NAV: Record<UserRole, { href: string; label: string }[]> = {
   tecnico: [{ href: "/tecnico", label: "Asignaciones" }],
 };
 
-export function Shell({
+export async function Shell({
   profile,
   children,
 }: {
   profile: Profile;
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("read", false);
+  const unread = count ?? 0;
+
   const initials = (profile.full_name ?? "?")
     .split(" ")
     .slice(0, 2)
@@ -58,6 +66,31 @@ export function Shell({
             </nav>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              href="/notificaciones"
+              aria-label={`Notificaciones${unread ? `, ${unread} sin leer` : ""}`}
+              className="relative flex h-8 w-8 items-center justify-center rounded-md text-milk/80 transition hover:bg-white/10 hover:text-milk"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+              </svg>
+              {unread > 0 && (
+                <span className="mono absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-signal px-1 text-[0.6rem] font-semibold text-ink">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </Link>
             <div className="hidden text-right sm:block">
               <p className="text-sm font-medium leading-none">
                 {profile.full_name}
