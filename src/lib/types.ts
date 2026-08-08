@@ -12,11 +12,20 @@ export type TicketStatus =
   | "cerrado"
   | "cancelado";
 
+export type TipoDocumento = "factura" | "boleta";
+
 export interface Profile {
   id: string;
   full_name: string | null;
   role: UserRole;
   phone: string | null;
+  rut: string | null;
+  razon_social: string | null;
+  giro: string | null;
+  direccion_facturacion: string | null;
+  comuna: string | null;
+  tipo_documento: TipoDocumento | null;
+  email_facturacion: string | null;
   created_at: string;
 }
 

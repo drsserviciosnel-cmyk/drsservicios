@@ -13,6 +13,7 @@ const NAV: Record<UserRole, { href: string; label: string }[]> = {
   cliente: [
     { href: "/cliente", label: "Mis tickets" },
     { href: "/cliente/instalaciones", label: "Lecherías" },
+    { href: "/cliente/facturacion", label: "Facturación" },
     { href: "/cliente/nuevo", label: "Nuevo" },
   ],
   admin: [
