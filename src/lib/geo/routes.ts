@@ -3,7 +3,7 @@ import "server-only";
 export interface DriveRoute {
   seconds: number;
   km: number;
-  provider: "google" | "osrm";
+  provider: "ors" | "google" | "osrm";
 }
 
 type Pt = { lat: number; lng: number };
@@ -18,6 +18,41 @@ async function withTimeout<T>(
     return await fn(ctrl.signal);
   } finally {
     clearTimeout(id);
+  }
+}
+
+/** OpenRouteService (driving-car) — requiere ORS_API_KEY (gratis, sin tarjeta). */
+async function ors(from: Pt, to: Pt): Promise<DriveRoute | null> {
+  const key = process.env.ORS_API_KEY;
+  if (!key) return null;
+  try {
+    return await withTimeout(async (signal) => {
+      const res = await fetch(
+        "https://api.openrouteservice.org/v2/directions/driving-car",
+        {
+          method: "POST",
+          signal,
+          headers: {
+            Authorization: key,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            coordinates: [
+              [from.lng, from.lat],
+              [to.lng, to.lat],
+            ],
+          }),
+        },
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      const s = data?.routes?.[0]?.summary;
+      if (!s || !s.duration) return null;
+      return { seconds: Math.round(s.duration), km: s.distance / 1000, provider: "ors" };
+    });
+  } catch {
+    return null;
   }
 }
 
@@ -88,5 +123,9 @@ export async function getDrivingRoute(
   from: Pt,
   to: Pt,
 ): Promise<DriveRoute | null> {
-  return (await google(from, to)) ?? (await osrm(from, to));
+  return (
+    (await ors(from, to)) ??
+    (await google(from, to)) ??
+    (await osrm(from, to))
+  );
 }
