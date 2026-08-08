@@ -129,3 +129,44 @@ export async function getDrivingRoute(
     (await osrm(from, to))
   );
 }
+
+/**
+ * Geometría de la ruta de manejo (para dibujar en el mapa), como
+ * lista de puntos [lat, lng]. Usa ORS GeoJSON. null si falla o no hay key.
+ */
+export async function getRouteGeometry(
+  from: Pt,
+  to: Pt,
+): Promise<[number, number][] | null> {
+  const key = process.env.ORS_API_KEY;
+  if (!key) return null;
+  try {
+    return await withTimeout(async (signal) => {
+      const res = await fetch(
+        "https://api.openrouteservice.org/v2/directions/driving-car/geojson",
+        {
+          method: "POST",
+          signal,
+          headers: {
+            Authorization: key,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            coordinates: [
+              [from.lng, from.lat],
+              [to.lng, to.lat],
+            ],
+          }),
+        },
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      const coords = data?.features?.[0]?.geometry?.coordinates;
+      if (!Array.isArray(coords)) return null;
+      return coords.map((c: [number, number]) => [c[1], c[0]]);
+    });
+  } catch {
+    return null;
+  }
+}

@@ -4,12 +4,59 @@ import {
   STATUS_LABEL,
   elapsed,
   since,
+  fmtDate,
   fmtKm,
   fmtDuration,
   fmtCLP,
   mapsRoute,
 } from "@/lib/format";
 import type { Factura, Ticket, TicketStatus } from "@/lib/types";
+
+/** Línea de tiempo de respuesta: cada etapa con su hora y el tramo transcurrido. */
+export function StageTimeline({ t }: { t: Ticket }) {
+  const steps = (
+    [
+      ["Creado", t.created_at],
+      ["Asignado", t.assigned_at],
+      ["Aceptado", t.accepted_at],
+      ["En camino", t.en_camino_at],
+      ["En proceso", t.started_at],
+      ["Resuelto", t.resolved_at],
+      ["Cerrado", t.closed_at],
+    ] as [string, string | null][]
+  ).filter(([, at]) => at) as [string, string][];
+
+  return (
+    <ol className="relative ml-1">
+      {steps.map(([label, at], i) => {
+        const last = i === steps.length - 1;
+        const delta = i > 0 ? elapsed(steps[i - 1][1], at) : null;
+        const done = label === "Resuelto" || label === "Cerrado";
+        return (
+          <li key={label} className="relative flex gap-3 pb-4 last:pb-0">
+            {!last && (
+              <span className="absolute left-[5px] top-3 h-full w-px bg-line-strong" />
+            )}
+            <span
+              className={`relative z-10 mt-1 h-2.5 w-2.5 flex-none rounded-full ${
+                done ? "bg-ok" : "bg-petrol"
+              }`}
+            />
+            <div className="flex-1">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-sm font-medium text-ink">{label}</span>
+                {delta && (
+                  <span className="mono text-xs text-signal">+{delta}</span>
+                )}
+              </div>
+              <span className="mono text-xs text-ink-faint">{fmtDate(at)}</span>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 const ESTADO_FACTURA: Record<string, string> = {
   borrador: "bg-milk text-ink-soft border-line-strong",

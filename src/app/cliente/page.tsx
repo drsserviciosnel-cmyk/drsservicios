@@ -108,15 +108,17 @@ export default async function ClientePage() {
               />
               <div className="p-4 pl-5">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
+                  <Link href={`/ticket/${t.id}`} className="group block">
                     <span className="mono text-xs text-ink-faint">
                       #{String(t.folio).padStart(4, "0")}
                     </span>
-                    <h3 className="font-semibold text-ink">{t.title}</h3>
+                    <h3 className="font-semibold text-ink group-hover:text-petrol group-hover:underline">
+                      {t.title}
+                    </h3>
                     {t.site_name && (
                       <p className="text-sm text-ink-soft">{t.site_name}</p>
                     )}
-                  </div>
+                  </Link>
                   <div className="flex flex-col items-end gap-1.5">
                     <StatusBadge status={t.status} />
                     <PriorityBadge priority={t.priority} />
