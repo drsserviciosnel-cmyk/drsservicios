@@ -12,6 +12,7 @@ const ROLE_LABEL: Record<UserRole, string> = {
 const NAV: Record<UserRole, { href: string; label: string }[]> = {
   cliente: [
     { href: "/cliente", label: "Mis tickets" },
+    { href: "/cliente/instalaciones", label: "Lecherías" },
     { href: "/cliente/nuevo", label: "Nuevo" },
   ],
   admin: [

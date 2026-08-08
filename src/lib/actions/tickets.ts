@@ -21,22 +21,30 @@ export async function createTicket(_prev: unknown, formData: FormData) {
   const { supabase, userId } = await currentUserId();
 
   const title = String(formData.get("title") || "").trim();
+  const siteId = String(formData.get("site_id") || "");
+  if (!siteId) return { error: "Selecciona la instalación (lechería)." };
   if (!title) return { error: "El título es obligatorio." };
 
-  const lat = formData.get("location_lat");
-  const lng = formData.get("location_lng");
+  // La ubicación proviene de la instalación registrada, no del dispositivo del cliente.
+  const { data: inst } = await supabase
+    .from("instalaciones")
+    .select("id, name, address, lat, lng")
+    .eq("id", siteId)
+    .single();
+  if (!inst) return { error: "Instalación no válida." };
 
   const { data, error } = await supabase
     .from("tickets")
     .insert({
       client_id: userId,
-      site_name: String(formData.get("site_name") || "").trim() || null,
+      site_id: inst.id,
+      site_name: inst.name,
       title,
       description: String(formData.get("description") || "").trim() || null,
       priority: (String(formData.get("priority") || "alta") as TicketPriority),
-      location_lat: lat ? Number(lat) : null,
-      location_lng: lng ? Number(lng) : null,
-      location_address: String(formData.get("location_address") || "").trim() || null,
+      location_lat: inst.lat,
+      location_lng: inst.lng,
+      location_address: inst.address,
     })
     .select("id")
     .single();

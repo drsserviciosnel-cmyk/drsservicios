@@ -20,10 +20,22 @@ export interface Profile {
   created_at: string;
 }
 
+export interface Instalacion {
+  id: string;
+  client_id: string;
+  name: string;
+  address: string;
+  lat: number | null;
+  lng: number | null;
+  notes: string | null;
+  created_at: string;
+}
+
 export interface Ticket {
   id: string;
   folio: number;
   client_id: string;
+  site_id: string | null;
   site_name: string | null;
   title: string;
   description: string | null;
