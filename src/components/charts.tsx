@@ -214,8 +214,8 @@ export function AreaTrend({
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
-      className="h-44 w-full"
-      preserveAspectRatio="none"
+      className="w-full"
+      style={{ aspectRatio: `${W} / ${H}` }}
       role="img"
       aria-label="Tickets creados por día"
     >
@@ -269,17 +269,19 @@ export function AreaTrend({
         </rect>
       ))}
 
-      {/* x labels */}
+      {/* x labels (extremos anclados para no recortar) */}
       {data.map((d, i) => {
         const lbl = fmtX ? fmtX(d.label, i, n) : null;
         if (!lbl) return null;
+        const anchor = i === 0 ? "start" : i === n - 1 ? "end" : "middle";
+        const tx = i === 0 ? padX : i === n - 1 ? padX + innerW : x(i);
         return (
           <text
             key={`x${i}`}
-            x={x(i)}
+            x={tx}
             y={H - 8}
-            textAnchor="middle"
-            fontSize="10"
+            textAnchor={anchor}
+            fontSize="9"
             fontFamily="var(--font-mono)"
             fill={CHART.inkFaint}
           >
