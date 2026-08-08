@@ -72,6 +72,7 @@ export const PIPELINE_SHORT: Record<TicketStatus, string> = {
 export function fmtDate(value: string | null): string {
   if (!value) return "—";
   return new Date(value).toLocaleString("es-CL", {
+    timeZone: "America/Santiago",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
