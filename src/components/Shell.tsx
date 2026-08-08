@@ -18,6 +18,7 @@ const NAV: Record<UserRole, { href: string; label: string }[]> = {
   ],
   admin: [
     { href: "/admin", label: "Tablero" },
+    { href: "/admin/facturas", label: "Facturas" },
     { href: "/admin/usuarios", label: "Usuarios" },
   ],
   tecnico: [{ href: "/tecnico", label: "Asignaciones" }],

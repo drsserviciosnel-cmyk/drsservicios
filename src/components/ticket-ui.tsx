@@ -6,9 +6,58 @@ import {
   since,
   fmtKm,
   fmtDuration,
+  fmtCLP,
   mapsRoute,
 } from "@/lib/format";
-import type { Ticket, TicketStatus } from "@/lib/types";
+import type { Factura, Ticket, TicketStatus } from "@/lib/types";
+
+const ESTADO_FACTURA: Record<string, string> = {
+  borrador: "bg-milk text-ink-soft border-line-strong",
+  emitida: "bg-ok-tint text-ok border-ok/30",
+  anulada: "bg-alert-tint text-alert border-alert/30",
+  error: "bg-alert-tint text-alert border-alert/30",
+};
+
+/** Resumen de la factura asociada a un ticket. */
+export function FacturaResumen({ factura }: { factura: Factura }) {
+  const tipo = factura.tipo_documento === "boleta" ? "Boleta" : "Factura";
+  return (
+    <div className="mt-3 rounded-lg border border-line bg-milk p-3">
+      <div className="flex items-center justify-between">
+        <span className="mono text-xs font-medium uppercase tracking-wide text-ink-soft">
+          {tipo} electrónica{factura.folio ? ` · Folio ${factura.folio}` : ""}
+        </span>
+        <span
+          className={`mono rounded-md border px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wide ${
+            ESTADO_FACTURA[factura.estado] ?? ESTADO_FACTURA.borrador
+          }`}
+        >
+          {factura.estado === "borrador" ? "Borrador" : factura.estado}
+        </span>
+      </div>
+      <div className="mono mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs">
+        <span className="text-ink-faint">Neto <b className="text-ink">{fmtCLP(factura.monto_neto)}</b></span>
+        <span className="text-ink-faint">IVA <b className="text-ink">{fmtCLP(factura.iva)}</b></span>
+        <span className="text-ink-faint">Total <b className="text-ink">{fmtCLP(factura.total)}</b></span>
+      </div>
+      {factura.pdf_url && (
+        <a
+          href={factura.pdf_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mono mt-2 inline-block text-xs text-petrol hover:underline"
+        >
+          ↳ Descargar documento
+        </a>
+      )}
+      {factura.estado === "borrador" && !factura.rut && (
+        <p className="mt-2 text-xs text-signal">
+          ⚠ Falta el RUT del cliente para poder emitir.
+        </p>
+      )}
+    </div>
+  );
+}
 
 /** Distancia técnico→sitio y desglose de tiempos de respuesta. */
 export function TicketMetrics({ t }: { t: Ticket }) {

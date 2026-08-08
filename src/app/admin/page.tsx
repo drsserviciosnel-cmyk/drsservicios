@@ -1,15 +1,17 @@
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { assignTicket, advanceStatus } from "@/lib/actions/tickets";
+import { assignTicket } from "@/lib/actions/tickets";
 import { Shell } from "@/components/Shell";
 import { StatusBadge, PriorityBadge } from "@/components/Badges";
 import {
   TicketPipeline,
   EvidenceThumb,
   TicketMetrics,
+  FacturaResumen,
 } from "@/components/ticket-ui";
+import { CerrarFacturarForm } from "@/components/CerrarFacturarForm";
 import { fmtDate, elapsed, since, STATUS_SPINE } from "@/lib/format";
-import type { Profile, TicketWithRelations } from "@/lib/types";
+import type { Factura, Profile, TicketWithRelations } from "@/lib/types";
 
 export default async function AdminPage() {
   const profile = await requireRole("admin");
@@ -28,8 +30,15 @@ export default async function AdminPage() {
     .eq("role", "tecnico")
     .order("full_name");
 
+  const { data: facturasRaw } = await supabase
+    .from("facturas")
+    .select("*");
+
   const tickets = (ticketsRaw ?? []) as TicketWithRelations[];
   const techs = (techsRaw ?? []) as Profile[];
+  const facturasPorTicket = new Map<string, Factura>();
+  for (const f of (facturasRaw ?? []) as Factura[])
+    facturasPorTicket.set(f.ticket_id, f);
 
   const open = tickets.filter(
     (t) => !["resuelto", "cerrado", "cancelado"].includes(t.status),
@@ -159,15 +168,13 @@ export default async function AdminPage() {
                     </form>
                   )}
                   {t.status === "resuelto" && (
-                    <form action={advanceStatus}>
-                      <input type="hidden" name="ticket_id" value={t.id} />
-                      <input type="hidden" name="to_status" value="cerrado" />
-                      <button className="mono rounded-lg border border-line-strong px-3 py-1.5 text-xs uppercase tracking-wide text-ink-soft transition hover:bg-milk">
-                        Cerrar ticket
-                      </button>
-                    </form>
+                    <CerrarFacturarForm ticketId={t.id} />
                   )}
                 </div>
+
+                {facturasPorTicket.has(t.id) && (
+                  <FacturaResumen factura={facturasPorTicket.get(t.id)!} />
+                )}
               </div>
             </article>
           ))}

@@ -62,6 +62,7 @@ export interface Ticket {
   drive_eta_seconds: number | null;
   drive_distance_km: number | null;
   route_provider: string | null;
+  monto_neto: number | null;
   created_at: string;
   assigned_at: string | null;
   accepted_at: string | null;
@@ -69,6 +70,29 @@ export interface Ticket {
   started_at: string | null;
   resolved_at: string | null;
   closed_at: string | null;
+}
+
+export type EstadoFactura = "borrador" | "emitida" | "anulada" | "error";
+
+export interface Factura {
+  id: string;
+  ticket_id: string;
+  client_id: string;
+  tipo_documento: TipoDocumento;
+  monto_neto: number;
+  iva: number;
+  total: number;
+  estado: EstadoFactura;
+  folio: number | null;
+  provider: string | null;
+  sii_track_id: string | null;
+  pdf_url: string | null;
+  rut: string | null;
+  razon_social: string | null;
+  giro: string | null;
+  direccion_facturacion: string | null;
+  comuna: string | null;
+  created_at: string;
 }
 
 export interface Notification {

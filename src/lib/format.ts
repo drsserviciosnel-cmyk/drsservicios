@@ -123,6 +123,18 @@ export function fmtKm(km: number | null): string {
   return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km`;
 }
 
+/** Monto en pesos chilenos → "$1.234.567". */
+export function fmtCLP(n: number | null): string {
+  if (n == null) return "—";
+  return "$" + Math.round(n).toLocaleString("es-CL");
+}
+
+/** IVA (19%) y total a partir del neto. */
+export function calcIva(neto: number): { iva: number; total: number } {
+  const iva = Math.round(neto * 0.19);
+  return { iva, total: neto + iva };
+}
+
 /** Duración en segundos → "X min" / "Xh Ym". */
 export function fmtDuration(seconds: number | null): string {
   if (seconds == null) return "—";

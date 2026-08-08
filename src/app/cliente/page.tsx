@@ -7,9 +7,10 @@ import {
   TicketPipeline,
   EvidenceThumb,
   TicketMetrics,
+  FacturaResumen,
 } from "@/components/ticket-ui";
 import { fmtDate, since, STATUS_SPINE } from "@/lib/format";
-import type { Ticket } from "@/lib/types";
+import type { Factura, Ticket } from "@/lib/types";
 
 export default async function ClientePage() {
   const profile = await requireRole("cliente");
@@ -18,8 +19,12 @@ export default async function ClientePage() {
     .from("tickets")
     .select("*")
     .order("created_at", { ascending: false });
+  const { data: facturasRaw } = await supabase.from("facturas").select("*");
 
   const list = (tickets ?? []) as Ticket[];
+  const facturasPorTicket = new Map<string, Factura>();
+  for (const f of (facturasRaw ?? []) as Factura[])
+    facturasPorTicket.set(f.ticket_id, f);
 
   return (
     <Shell profile={profile}>
@@ -79,6 +84,10 @@ export default async function ClientePage() {
 
                 {t.evidence_url && (
                   <EvidenceThumb url={t.evidence_url} note={t.resolution_note} />
+                )}
+
+                {facturasPorTicket.has(t.id) && (
+                  <FacturaResumen factura={facturasPorTicket.get(t.id)!} />
                 )}
 
                 <div className="mono mt-4 flex flex-wrap gap-x-6 gap-y-1 border-t border-line pt-3 text-xs text-ink-faint">
