@@ -189,7 +189,7 @@ export async function departToTicket(formData: FormData) {
     to_status: "en_camino",
     note:
       etaMin != null
-        ? `En camino · ETA ~${etaMin} min (${driveKm} km)`
+        ? `En camino · llegada estimada ~${etaMin} min (${driveKm} km)`
         : distance != null
           ? `En camino · ~${distance} km al sitio`
           : "En camino",

@@ -29,12 +29,12 @@ export function TicketMetrics({ t }: { t: Ticket }) {
   const chips: { label: string; value: string; tone?: string }[] = [];
   if (t.drive_eta_seconds != null) {
     chips.push({
-      label: "ETA auto",
+      label: "Llegada",
       value: `~${fmtDuration(t.drive_eta_seconds)}`,
       tone: "text-petrol",
     });
     if (t.drive_distance_km != null)
-      chips.push({ label: "Manejo", value: fmtKm(t.drive_distance_km) });
+      chips.push({ label: "Distancia", value: fmtKm(t.drive_distance_km) });
   } else if (t.distance_km != null) {
     chips.push({ label: "Distancia", value: `~${fmtKm(t.distance_km)}` });
   }
