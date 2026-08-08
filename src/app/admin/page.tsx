@@ -10,8 +10,29 @@ import {
   FacturaResumen,
 } from "@/components/ticket-ui";
 import { CerrarFacturarForm } from "@/components/CerrarFacturarForm";
-import { fmtDate, elapsed, since, STATUS_SPINE } from "@/lib/format";
-import type { Factura, Profile, TicketWithRelations } from "@/lib/types";
+import {
+  AreaTrend,
+  BarList,
+  STATUS_CHART,
+  PRIORITY_CHART,
+  CHART,
+} from "@/components/charts";
+import {
+  fmtDate,
+  elapsed,
+  since,
+  STATUS_SPINE,
+  STATUS_LABEL,
+  PRIORITY_LABEL,
+} from "@/lib/format";
+import { ticketsPerDay, avgMinutes, xTick, humanMin } from "@/lib/analytics";
+import type {
+  Factura,
+  Profile,
+  TicketPriority,
+  TicketStatus,
+  TicketWithRelations,
+} from "@/lib/types";
 
 export default async function AdminPage() {
   const profile = await requireRole("admin");
@@ -46,13 +67,44 @@ export default async function AdminPage() {
   const emergencias = tickets.filter(
     (t) => t.priority === "emergencia" && t.status !== "cerrado",
   ).length;
-  const assignTimes = tickets
-    .filter((t) => t.assigned_at)
-    .map((t) => new Date(t.assigned_at!).getTime() - new Date(t.created_at).getTime());
-  const avgAssign =
-    assignTimes.length > 0
-      ? Math.round(assignTimes.reduce((a, b) => a + b, 0) / assignTimes.length / 60000)
-      : null;
+  const resueltos = tickets.filter((t) =>
+    ["resuelto", "cerrado"].includes(t.status),
+  ).length;
+
+  const statusOrder: TicketStatus[] = [
+    "nuevo", "asignado", "aceptado", "en_camino",
+    "en_proceso", "resuelto", "cerrado", "cancelado",
+  ];
+  const statusItems = statusOrder
+    .map((s) => ({
+      label: STATUS_LABEL[s],
+      value: tickets.filter((t) => t.status === s).length,
+      color: STATUS_CHART[s],
+    }))
+    .filter((i) => i.value > 0);
+
+  const prioOrder: TicketPriority[] = ["emergencia", "alta", "media", "baja"];
+  const prioItems = prioOrder
+    .map((p) => ({
+      label: PRIORITY_LABEL[p],
+      value: tickets.filter((t) => t.priority === p).length,
+      color: PRIORITY_CHART[p],
+    }))
+    .filter((i) => i.value > 0);
+
+  const techItems = techs
+    .map((tk) => ({
+      label: tk.full_name ?? "—",
+      value: tickets.filter((t) => t.assigned_technician_id === tk.id).length,
+      color: CHART.petrol,
+    }))
+    .filter((i) => i.value > 0)
+    .sort((a, b) => b.value - a.value);
+
+  const perDay = ticketsPerDay(tickets, 30);
+  const tRespuesta = avgMinutes(tickets, "created_at", "accepted_at");
+  const tTraslado = avgMinutes(tickets, "en_camino_at", "started_at");
+  const tResolucion = avgMinutes(tickets, "created_at", "resolved_at");
 
   return (
     <Shell profile={profile}>
@@ -61,15 +113,50 @@ export default async function AdminPage() {
         <h1 className="display mt-1 text-2xl text-ink">Tablero de tickets</h1>
       </div>
 
-      <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* KPIs */}
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="Total" value={tickets.length} />
-        <Stat label="Abiertos" value={open} />
+        <Stat label="Abiertos" value={open} tone="signal" />
         <Stat label="Emergencias" value={emergencias} tone="alert" />
-        <Stat
-          label="Asignación prom."
-          value={avgAssign != null ? `${avgAssign}m` : "—"}
-          tone="signal"
-        />
+        <Stat label="Resueltos" value={resueltos} tone="ok" />
+      </div>
+
+      {/* Tendencia (protagonista) */}
+      <div className="mb-4 rounded-2xl border border-line bg-paper p-5 shadow-sm">
+        <div className="mb-2 flex items-baseline justify-between">
+          <div>
+            <p className="eyebrow">Volumen de tickets</p>
+            <h2 className="display text-lg text-ink">Últimos 30 días</h2>
+          </div>
+          <span className="mono text-xs text-ink-faint">
+            {tickets.length} en total
+          </span>
+        </div>
+        <AreaTrend data={perDay} fmtX={xTick} />
+      </div>
+
+      {/* Distribuciones */}
+      <div className="mb-4 grid gap-4 md:grid-cols-3">
+        <ChartCard title="Por estado">
+          <BarList items={statusItems} />
+        </ChartCard>
+        <ChartCard title="Por prioridad">
+          <BarList items={prioItems} />
+        </ChartCard>
+        <ChartCard title="Tickets por técnico">
+          {techItems.length > 0 ? (
+            <BarList items={techItems} />
+          ) : (
+            <p className="text-sm text-ink-faint">Sin asignaciones aún.</p>
+          )}
+        </ChartCard>
+      </div>
+
+      {/* Tiempos promedio */}
+      <div className="mb-8 grid grid-cols-3 gap-3">
+        <Stat label="Resp. promedio" value={humanMin(tRespuesta)} tone="ink" />
+        <Stat label="Traslado prom." value={humanMin(tTraslado)} tone="signal" />
+        <Stat label="Resolución prom." value={humanMin(tResolucion)} tone="ok" />
       </div>
 
       {tickets.length === 0 ? (
@@ -191,14 +278,35 @@ function Stat({
 }: {
   label: string;
   value: string | number;
-  tone?: "ink" | "alert" | "signal";
+  tone?: "ink" | "alert" | "signal" | "ok";
 }) {
   const valueColor =
-    tone === "alert" ? "text-alert" : tone === "signal" ? "text-signal" : "text-ink";
+    tone === "alert"
+      ? "text-alert"
+      : tone === "signal"
+        ? "text-signal"
+        : tone === "ok"
+          ? "text-ok"
+          : "text-ink";
   return (
     <div className="rounded-xl border border-line bg-paper p-4 shadow-sm">
       <p className="eyebrow">{label}</p>
       <p className={`display mt-2 text-3xl tabular-nums ${valueColor}`}>{value}</p>
+    </div>
+  );
+}
+
+function ChartCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-line bg-paper p-5 shadow-sm">
+      <p className="eyebrow mb-3">{title}</p>
+      {children}
     </div>
   );
 }

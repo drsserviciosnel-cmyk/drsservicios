@@ -9,7 +9,15 @@ import {
   TicketMetrics,
   FacturaResumen,
 } from "@/components/ticket-ui";
+import {
+  StatTile,
+  ChartCard,
+  Donut,
+  AreaTrend,
+  CHART,
+} from "@/components/charts";
 import { fmtDate, since, STATUS_SPINE } from "@/lib/format";
+import { avgMinutes, humanMin, ticketsPerDay, xTick } from "@/lib/analytics";
 import type { Factura, Ticket } from "@/lib/types";
 
 export default async function ClientePage() {
@@ -26,6 +34,29 @@ export default async function ClientePage() {
   for (const f of (facturasRaw ?? []) as Factura[])
     facturasPorTicket.set(f.ticket_id, f);
 
+  // Resumen
+  const abiertos = list.filter(
+    (t) => !["resuelto", "cerrado", "cancelado"].includes(t.status),
+  ).length;
+  const resueltos = list.filter((t) =>
+    ["resuelto", "cerrado"].includes(t.status),
+  ).length;
+  const tRespuesta = avgMinutes(list, "created_at", "accepted_at");
+
+  const enCurso = list.filter((t) =>
+    ["nuevo", "asignado", "aceptado", "en_camino", "en_proceso"].includes(t.status),
+  ).length;
+  const cerrados = list.filter((t) => t.status === "cerrado").length;
+  const cancelados = list.filter((t) => t.status === "cancelado").length;
+  const soloResueltos = list.filter((t) => t.status === "resuelto").length;
+  const donut = [
+    { label: "En curso", value: enCurso, color: CHART.petrol },
+    { label: "Resueltos", value: soloResueltos, color: CHART.ok },
+    { label: "Cerrados", value: cerrados, color: CHART.cerrado },
+    { label: "Cancelados", value: cancelados, color: CHART.alert },
+  ];
+  const perDay = ticketsPerDay(list, 30);
+
   return (
     <Shell profile={profile}>
       <div className="mb-6 flex items-end justify-between">
@@ -41,9 +72,31 @@ export default async function ClientePage() {
         </Link>
       </div>
 
+      {list.length > 0 && (
+        <div className="mb-8 space-y-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatTile label="Mis tickets" value={list.length} />
+            <StatTile label="Abiertos" value={abiertos} tone="signal" />
+            <StatTile label="Resueltos" value={resueltos} tone="ok" />
+            <StatTile label="Resp. promedio" value={humanMin(tRespuesta)} />
+          </div>
+          <div className="grid gap-4 md:grid-cols-[1fr_1.3fr]">
+            <ChartCard title="Estado de mis tickets">
+              <Donut segments={donut} centerValue={list.length} centerLabel="tickets" />
+            </ChartCard>
+            <ChartCard title="Mi actividad · últimos 30 días">
+              <AreaTrend data={perDay} fmtX={xTick} />
+            </ChartCard>
+          </div>
+        </div>
+      )}
+
       {list.length === 0 ? (
         <Empty />
       ) : (
+        <h2 className="eyebrow mb-3">Detalle</h2>
+      )}
+      {list.length > 0 && (
         <div className="space-y-3">
           {list.map((t) => (
             <article
